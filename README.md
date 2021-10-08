@@ -1,4 +1,4 @@
-Intro
+Windows
 ==============
 
 This is a simple example to enable GPU support for Windows.
@@ -50,3 +50,115 @@ percentage is non-zero if the training is using the GPU.
 | N/A   48C    P8     5W /  N/A |    134MiB /  4096MiB |     12%      Default |
 +-------------------------------+----------------------+----------------------+
 ```
+
+Ubuntu
+==============
+
+Target packages.
+
+```
+CUDA 10.0
+cuDNN 7.4
+tensorflow_gpu-1.15.0
+```
+Check the graphic card.
+```
+$ lspci | grep -i nvidia
+01:00.0 VGA compatible controller: NVIDIA Corporation GP104 [GeForce GTX 1080] (rev a1)
+01:00.1 Audio device: NVIDIA Corporation GP104 High Definition Audio Controller (rev a1)
+```
+Or.
+```
+$ lspci | grep VGA
+VGA compatible controller: NVIDIA Corporation GP104 [GeForce GTX 1080] (rev a1)
+```
+Check the CPU and the memory.
+```
+$ cat /proc/cpuinfo | grep "model name"
+model name	: Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz
+```
+
+```
+$ sudo dmidecode -t 17 | grep Size
+	Size: 8192 MB
+	Size: 8192 MB
+```
+
+```
+$ grep MemTotal /proc/meminfo | awk '{print $2 / 1024}'
+15955.6
+```
+Install Nvidia drivers.
+Check what version the current version is and what is available.
+```
+$ modinfo nvidia | grep version
+$ ubuntu-drivers devices
+```
+Select version 430.
+```
+$ sudo ubuntu-drivers autoinstall
+```
+Or.
+```
+$ sudo apt install nvidia-430
+```
+Select Nvidia driver before rebooting.
+```
+$ prime-select query
+$ prime-select nvidia
+```
+Reboot.
+
+
+Install Cuda.
+
+Check first.
+```
+$ nvcc --version
+$ apt list --installed | grep -i nvcc
+```
+Install.
+```
+$ sudo apt-get install cuda=10.0.130-1
+```
+Install cuDNN: Download runtime, developer libs and examples packages first.
+```
+$ sudo dpkg -i libcudnn7_7.4.2.24-1+cuda10.0_amd64.deb
+$ sudo dpkg -i libcudnn7-dev_7.4.2.24-1+cuda10.0_amd64.deb 
+$ sudo dpkg -i libcudnn7-doc_7.4.2.24-1+cuda10.0_amd64.deb
+```
+
+```
+$ sudo apt-mark hold libcudnn7 libcudnn7-dev
+$ apt-mark showhold
+```
+Set the path.
+```
+$ vi ~/.bashrc
+```
+
+```
+export LD_LIBRARY_PATH=/usr/local/cuda-10.0/lib64:$LD_LIBRARY_PATH
+export PATH=/usr/local/cuda-10.0/bin:$PATH
+```
+
+```
+$ source ~/.bashrc
+```
+Check the Python version.
+```
+$ python3 -V
+Python 3.6.8
+```
+Install the Tensorflow.
+```
+$ pip install "tensorflow-gpu==1.15.0"
+```
+When needed, remove the previous releases: (cuda 11.4 or later has an unistaller)
+```
+$ sudo apt-get --purge remove "*cublas*" "cuda*" "nsight*" 
+$ sudo apt-get --purge remove "libcudnn7*"
+$ sudo apt-get --purge remove "*nvidia*"
+```
+
+
